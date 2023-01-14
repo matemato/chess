@@ -7,29 +7,21 @@ import { CdkDragDrop, moveItemInArray, transferArrayItem } from '@angular/cdk/dr
   styleUrls: ['./board.component.scss'],
 })
 export class BoardComponent {
-  todo = [
-    'Get to work',
-    'Pick up groceries',
-    'Go home',
-    'Fall asleep'
-  ];
+  // board = Array.from(Array(8), () => new Array(8))
+  tiles = Array(64).fill(' ')
 
-  done = [
-    'Get up',
-    'Brush teeth',
-    'Take a shower',
-    'Check e-mail',
-    'Walk dog'
-  ];
-
-  drop(event: CdkDragDrop<string[]>): void {
-    if (event.previousContainer === event.container) {
-      moveItemInArray(event.container.data, event.previousIndex, event.currentIndex);
-    } else {
-      transferArrayItem(event.previousContainer.data,
-          event.container.data,
-          event.previousIndex,
-          event.currentIndex);
-    }
+  tileColor(i: number) {
+    return (i%2 + Math.floor(i/8))%2 == 0 ? 'rgb(240,217,181)' : 'rgb(181,136,99)';
   }
+
+  // drop(event: CdkDragDrop<string[]>): void {
+  //   if (event.previousContainer === event.container) {
+  //     moveItemInArray(event.container.data, event.previousIndex, event.currentIndex);
+  //   } else {
+  //     transferArrayItem(event.previousContainer.data,
+  //         event.container.data,
+  //         event.previousIndex,
+  //         event.currentIndex);
+  //   }
+  // }
 }
