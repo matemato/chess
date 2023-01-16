@@ -7,11 +7,13 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { BoardComponent } from './board/board.component';
 import { DragDropModule } from '@angular/cdk/drag-drop';
 import {MatGridListModule} from '@angular/material/grid-list';
+import { PieceComponent } from './piece/piece.component';
 
 @NgModule({
   declarations: [
     AppComponent,
-    BoardComponent
+    BoardComponent,
+    PieceComponent
   ],
   imports: [
     BrowserModule,
