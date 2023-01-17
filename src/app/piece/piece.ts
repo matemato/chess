@@ -1,18 +1,21 @@
 import {
-	pieceNames, 
-	colors} 
+	pieceName,
+    tileColor, 
+	pieceColor} 
 from "../constants"
 
-export class Piece {
-    color: colors | null;
-    name: pieceNames | null;
+export class Tile {
+    pieceColor: pieceColor | null;
+    piece: pieceName | null;
     position: string | null;
+    tileColor: tileColor;
     img: string | null;
 
-    constructor(color: colors | null, name: pieceNames | null, position: string, img: string | null) {
-        this.color = color;
-        this.name = name;
+    constructor(pieceColor: pieceColor | null, piece: pieceName | null, position: string, tileColor: tileColor, img: string | null) {
+        this.pieceColor = pieceColor;
+        this.piece = piece;
         this.position = position;
+        this.tileColor = tileColor;
         this.img = img
     }
 }

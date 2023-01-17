@@ -1,4 +1,4 @@
-export enum pieceNames {
+export enum pieceName {
     PAWN = "p",
     ROOK = "r", 
     KNIGHT = "n", 
@@ -7,19 +7,25 @@ export enum pieceNames {
     KING = "k"
 }
 
-export enum colors {
+export enum pieceColor {
     BLACK = "b",
     WHITE = "w",
-    SELECTED = "yellow"
+}
+
+export enum tileColor {
+    LIGHTBROWN = 'rgb(240,217,181)',
+    DARKBROWN = 'rgb(181,136,99)',
+    LIGHTSELECTED = 'rgb(236,121,100)',
+    DARKSELECTED = 'rgb(224,105,84)'
 }
 
 export const pieceOrder = [    
-    pieceNames.ROOK,
-    pieceNames.KNIGHT,
-    pieceNames.BISHOP,
-    pieceNames.KING,
-    pieceNames.QUEEN,
-    pieceNames.BISHOP,
-    pieceNames.KNIGHT,
-    pieceNames.ROOK
+    pieceName.ROOK,
+    pieceName.KNIGHT,
+    pieceName.BISHOP,
+    pieceName.KING,
+    pieceName.QUEEN,
+    pieceName.BISHOP,
+    pieceName.KNIGHT,
+    pieceName.ROOK
 ]

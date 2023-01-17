@@ -1,8 +1,5 @@
-import { Component, Inject, Input, OnInit } from '@angular/core';
-import {
-	pieceNames, 
-	colors} 
-from "../constants"
+import { Component } from '@angular/core';
+
 
 @Component({
   selector: 'app-piece',
@@ -10,9 +7,5 @@ from "../constants"
   `,
   styleUrls: ['./piece.component.scss']
 })
-export class PieceComponent {
-  @Input() color: colors
-  @Input() name: pieceNames
-  @Input() position: string
-  @Input() img: string
-}
+export class PieceComponent {}
+  
