@@ -6,23 +6,25 @@ import { AppComponent } from './app.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { BoardComponent } from './board/board.component';
 import { DragDropModule } from '@angular/cdk/drag-drop';
-import {MatGridListModule} from '@angular/material/grid-list';
-import { PieceComponent } from './piece/piece.component';
+import { MatGridListModule } from '@angular/material/grid-list';
+import { TileComponent } from './tile/tile.component';
+import { PieceMovementComponent } from './piece-movement/piece-movement.component';
 
 @NgModule({
   declarations: [
     AppComponent,
     BoardComponent,
-    PieceComponent
+    TileComponent,
+    PieceMovementComponent,
   ],
   imports: [
     BrowserModule,
     AppRoutingModule,
     BrowserAnimationsModule,
     DragDropModule,
-    MatGridListModule
+    MatGridListModule,
   ],
   providers: [],
-  bootstrap: [AppComponent]
+  bootstrap: [AppComponent],
 })
-export class AppModule { }
+export class AppModule {}

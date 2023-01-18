@@ -11,7 +11,7 @@
             [style.background]="tile.tileColor"
             (contextmenu)="changeColor(tile)"
           >
-            <app-piece *ngIf="tile.piece != null"
+            <app-tile *ngIf="tile.piece != null"
               cdkDragBoundary=".example-boundary"
               [cdkDragData]="tile"
               cdkDrag
@@ -22,14 +22,14 @@
               [style.cursor]="'grab'"
             >
               <div *cdkDragPlaceholder></div>
-            </app-piece>
-            <app-piece *ngIf="tile.piece == null"
+            </app-tile>
+            <app-tile *ngIf="tile.piece == null"
               cdkDrag
               [cdkDragData]="tile"
               [style.background-image]="tile.img"
             >
               <div *cdkDragPlaceholder></div>
-            </app-piece>
+            </app-tile>
         </div>
           </mat-grid-tile>
         </ng-container>

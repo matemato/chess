@@ -1,12 +1,8 @@
 import { Component, HostListener } from '@angular/core';
 import { CdkDragDrop, CdkDragMove, CdkDragStart, moveItemInArray, transferArrayItem } from '@angular/cdk/drag-drop';
-import {
-	pieceName, 
-	pieceColor,
-  tileColor, 
-	pieceOrder} 
-from "../constants"
-import { Tile } from '../piece/piece';
+import { pieceName, pieceColor, tileColor, pieceOrder} from "../constants"
+import { Tile } from '../tile/tile';
+import { PieceMovementComponent } from '../piece-movement/piece-movement.component';
 
 @Component({
   selector: 'app-board',
@@ -22,7 +18,9 @@ export class BoardComponent {
     [tileColor.DARKBROWN]: tileColor.DARKSELECTED,
     [tileColor.DARKSELECTED]: tileColor.DARKBROWN,
     [tileColor.LIGHTBROWN]: tileColor.LIGHTSELECTED,
-    [tileColor.LIGHTSELECTED]: tileColor.LIGHTBROWN
+    [tileColor.LIGHTSELECTED]: tileColor.LIGHTBROWN,
+    [tileColor.MOVED]: tileColor.MOVED,
+    [tileColor.PREVIOUS]: tileColor.PREVIOUS
   }
   tiles = [
     pieceOrder.map((name, i) => new Tile(pieceColor.WHITE, name, this.columns[i]+"1", this.tileColors[i%2],this.imageLink+pieceColor.WHITE+name+'.png')),
@@ -35,10 +33,14 @@ export class BoardComponent {
     pieceOrder.map((name, i) => new Tile(pieceColor.BLACK, name, this.columns[i]+"8", this.tileColors[(i+1)%2], this.imageLink+pieceColor.BLACK+name+'.png'))
   ]
 
-  resetTileColors() {
+  pieceMovement = new PieceMovementComponent(this.tiles)
+
+  resetTileColors(removeAll: boolean) {
     for (let [i,row] of this.tiles.entries()) {
       for (let [j, t] of row.entries()) {
-        t.tileColor = (i%2 + j)%2 == 0 ? tileColor.LIGHTBROWN : tileColor.DARKBROWN;
+        if (removeAll || (t.tileColor != tileColor.MOVED && t.tileColor != tileColor.PREVIOUS)) {
+          t.tileColor = (i%2 + j)%2 == 0 ? tileColor.LIGHTBROWN : tileColor.DARKBROWN;
+        }
       }
     }
   }
@@ -48,26 +50,31 @@ export class BoardComponent {
   }
 
   changeColor(tile: Tile){
-    tile.tileColor = this.toggleSelect[tile.tileColor] || tile.tileColor;
+    tile.tileColor = this.toggleSelect[tile.tileColor];
   }
 
-  changePos(tile1: Tile, tile2:Tile){
-    tile1.pieceColor = tile2.pieceColor;
-    tile1.piece = tile2.piece;
-    tile1.position = tile2.position;
-    tile1.img = tile2.img;
+  changePos(tile_1: Tile, tile_2:Tile){
+    tile_1.pieceColor = tile_2.pieceColor;
+    tile_1.piece = tile_2.piece;
+    tile_1.img = tile_2.img;
   }
+
+  moveColor(oldTile: Tile, newTile: Tile) {
+    oldTile.tileColor = tileColor.PREVIOUS
+    newTile.tileColor = tileColor.MOVED
+  }
+
   @HostListener('contextmenu', ['$event'])
   onRightClick(event: MouseEvent) {
     event.preventDefault();
   }
   @HostListener('click', ['$event'])
   onLeftClick(event: MouseEvent){
-    this.resetTileColors()
+    this.resetTileColors(false)
   }
 
   dragStart(event: CdkDragStart) {
-    this.resetTileColors()
+    this.resetTileColors(false);
     this.bodyElement.classList.add('inheritCursors');
     this.bodyElement.style.cursor = 'grabbing';
   }
@@ -76,15 +83,16 @@ export class BoardComponent {
     this.bodyElement.classList.remove('inheritCursors');
     this.bodyElement.style.cursor = 'unset';
 
-    var prevPos = event.previousContainer.data
-    var newPos = event.container.data
-    var emptyTile = new Tile(null, null, prevPos.position, tileColor.DARKBROWN, null)
+    var prevPos = event.previousContainer.data;
+    var newPos = event.container.data;
+    var emptyTile = new Tile(null, null, prevPos.position, tileColor.DARKBROWN, null);
 
-    if (newPos.name == null && prevPos != newPos){
-      this.changePos(newPos, prevPos)
-      this.changePos(prevPos, emptyTile)
-      // newPos.img = prevPos.img;
-      // prevPos.img = emptyTile.img;
+    // if (newPos.name == null && prevPos != newPos){
+    if (this.pieceMovement.availableMoves(prevPos) == newPos.position) {
+      this.resetTileColors(true);
+      this.moveColor(prevPos, newPos);
+      this.changePos(newPos, prevPos);
+      this.changePos(prevPos, emptyTile);
     }
     console.log(prevPos)
     console.log(newPos)

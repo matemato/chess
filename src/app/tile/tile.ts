@@ -7,7 +7,7 @@ from "../constants"
 export class Tile {
     pieceColor: pieceColor | null;
     piece: pieceName | null;
-    position: string | null;
+    position: string;
     tileColor: tileColor;
     img: string | null;
 
