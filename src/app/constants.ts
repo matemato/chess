@@ -18,8 +18,14 @@ export enum tileColor {
     LIGHTSELECTED = 'rgb(236,121,100)',
     DARKSELECTED = 'rgb(224,105,84)',
     PREVIOUS = 'rgb(218,195,50)',
-    MOVED = 'rgb(247,236,91)'
+    MOVED = 'rgb(247,236,91)',
+    AVAILABLE = 'rgb(0,128,0)'
 }
+
+export const tileColors = [
+    tileColor.LIGHTBROWN,
+    tileColor.DARKBROWN
+]
 
 export const pieceOrder = [    
     pieceName.ROOK,

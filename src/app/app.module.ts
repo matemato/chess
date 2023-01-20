@@ -8,14 +8,12 @@ import { BoardComponent } from './board/board.component';
 import { DragDropModule } from '@angular/cdk/drag-drop';
 import { MatGridListModule } from '@angular/material/grid-list';
 import { TileComponent } from './tile/tile.component';
-import { PieceMovementComponent } from './piece-movement/piece-movement.component';
 
 @NgModule({
   declarations: [
     AppComponent,
     BoardComponent,
     TileComponent,
-    PieceMovementComponent,
   ],
   imports: [
     BrowserModule,

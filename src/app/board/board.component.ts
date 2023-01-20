@@ -1,8 +1,9 @@
 import { Component, HostListener } from '@angular/core';
 import { CdkDragDrop, CdkDragMove, CdkDragStart, moveItemInArray, transferArrayItem } from '@angular/cdk/drag-drop';
-import { pieceName, pieceColor, tileColor, pieceOrder} from "../constants"
+import { pieceName, pieceColor, tileColor, pieceOrder, tileColors} from "../constants"
 import { Tile } from '../tile/tile';
-import { PieceMovementComponent } from '../piece-movement/piece-movement.component';
+import { Piece } from '../piece/piece';
+import { Chess } from '../piece/chess';
 
 @Component({
   selector: 'app-board',
@@ -11,57 +12,59 @@ import { PieceMovementComponent } from '../piece-movement/piece-movement.compone
 })
 export class BoardComponent {
   imageLink = 'url(https://www.chess.com/chess-themes/pieces/icy_sea/150/'
-  columns = ["A", "B", "C", "D", "E", "F", "G", "H"]
+  // columns = ["A", "B", "C", "D", "E", "F", "G", "H"]
   bodyElement: HTMLElement = document.body;
-  tileColors = [tileColor.LIGHTBROWN, tileColor.DARKBROWN]
   toggleSelect = {
     [tileColor.DARKBROWN]: tileColor.DARKSELECTED,
     [tileColor.DARKSELECTED]: tileColor.DARKBROWN,
     [tileColor.LIGHTBROWN]: tileColor.LIGHTSELECTED,
     [tileColor.LIGHTSELECTED]: tileColor.LIGHTBROWN,
     [tileColor.MOVED]: tileColor.MOVED,
-    [tileColor.PREVIOUS]: tileColor.PREVIOUS
+    [tileColor.PREVIOUS]: tileColor.PREVIOUS,
+    [tileColor.AVAILABLE]: tileColor.AVAILABLE
   }
-  tiles = [
-    pieceOrder.map((name, i) => new Tile(pieceColor.WHITE, name, this.columns[i]+"1", this.tileColors[i%2],this.imageLink+pieceColor.WHITE+name+'.png')),
-    Array(8).fill(' ').map((name, i) => new Tile(pieceColor.WHITE, pieceName.PAWN, this.columns[i]+"2", this.tileColors[(i+1)%2], this.imageLink+pieceColor.WHITE+pieceName.PAWN+'.png')),
-    Array(8).fill(' ').map((name, i) => new Tile(null, null, this.columns[i]+"3", this.tileColors[i%2], null)),
-    Array(8).fill(' ').map((name, i) => new Tile(null, null, this.columns[i]+"4", this.tileColors[(i+1)%2], null)),
-    Array(8).fill(' ').map((name, i) => new Tile(null, null, this.columns[i]+"5", this.tileColors[i%2], null)),
-    Array(8).fill(' ').map((name, i) => new Tile(null, null, this.columns[i]+"6", this.tileColors[(i+1)%2], null)),
-    Array(8).fill(' ').map((name, i) => new Tile(pieceColor.BLACK, pieceName.PAWN, this.columns[i]+"7", this.tileColors[i%2], this.imageLink+pieceColor.BLACK+pieceName.PAWN+'.png')),
-    pieceOrder.map((name, i) => new Tile(pieceColor.BLACK, name, this.columns[i]+"8", this.tileColors[(i+1)%2], this.imageLink+pieceColor.BLACK+name+'.png'))
-  ]
-
-  pieceMovement = new PieceMovementComponent(this.tiles)
+  chess = new Chess([
+    pieceOrder.map((name, i) => new Tile(new Piece(pieceColor.WHITE, name, this.imageLink+pieceColor.WHITE+name+'.png'), [0, i], tileColors[i%2])),
+    Array(8).fill(' ').map((name, i) => new Tile(new Piece(pieceColor.WHITE, pieceName.PAWN, this.imageLink+pieceColor.WHITE+pieceName.PAWN+'.png'), [1, i], tileColors[(i+1)%2])),
+    Array(8).fill(' ').map((name, i) => new Tile(new Piece(null, null, null), [2, i], tileColors[i%2])),
+    Array(8).fill(' ').map((name, i) => new Tile(new Piece(null, null, null), [3, i], tileColors[(i+1)%2])),
+    Array(8).fill(' ').map((name, i) => new Tile(new Piece(null, null, null), [4, i], tileColors[i%2])),
+    Array(8).fill(' ').map((name, i) => new Tile(new Piece(null, null, null), [5, i], tileColors[(i+1)%2])),
+    Array(8).fill(' ').map((name, i) => new Tile(new Piece(pieceColor.BLACK, pieceName.PAWN, this.imageLink+pieceColor.BLACK+pieceName.PAWN+'.png'), [6, i], tileColors[i%2])),
+    pieceOrder.map((name, i) => new Tile(new Piece(pieceColor.BLACK, name, this.imageLink+pieceColor.BLACK+name+'.png'), [7, i], tileColors[(i+1)%2]))
+  ])
 
   resetTileColors(removeAll: boolean) {
-    for (let [i,row] of this.tiles.entries()) {
+    for (let [i,row] of this.chess.chessboard.entries()) {
       for (let [j, t] of row.entries()) {
-        if (removeAll || (t.tileColor != tileColor.MOVED && t.tileColor != tileColor.PREVIOUS)) {
-          t.tileColor = (i%2 + j)%2 == 0 ? tileColor.LIGHTBROWN : tileColor.DARKBROWN;
+        if (removeAll || (t.color != tileColor.MOVED && t.color != tileColor.PREVIOUS)) {
+          t.color = (i%2 + j)%2 == 0 ? tileColor.LIGHTBROWN : tileColor.DARKBROWN;
         }
       }
     }
   }
 
+  showAvailableMoves() {
+    if (this.chess.moves != null) {
+      for (let [i,j] of this.chess.moves) {
+        this.chess.chessboard[i][j].color = tileColor.AVAILABLE;
+      }
+    }
+  }
+
   pieceImage(i: number, j:number) {
-    return this.tiles[i][j].img
+    return this.chess.chessboard[i][j].piece.img
   }
 
   changeColor(tile: Tile){
-    tile.tileColor = this.toggleSelect[tile.tileColor];
+    tile.color = this.toggleSelect[tile.color];
   }
 
-  changePos(tile_1: Tile, tile_2:Tile){
-    tile_1.pieceColor = tile_2.pieceColor;
-    tile_1.piece = tile_2.piece;
-    tile_1.img = tile_2.img;
-  }
-
-  moveColor(oldTile: Tile, newTile: Tile) {
-    oldTile.tileColor = tileColor.PREVIOUS
-    newTile.tileColor = tileColor.MOVED
+  move(prevPos: Tile, newPos: Tile) {
+    prevPos.color = tileColor.PREVIOUS
+    newPos.color = tileColor.MOVED
+    newPos.piece = prevPos.piece
+    prevPos.piece = new Piece(null, null, null)
   }
 
   @HostListener('contextmenu', ['$event'])
@@ -77,6 +80,9 @@ export class BoardComponent {
     this.resetTileColors(false);
     this.bodyElement.classList.add('inheritCursors');
     this.bodyElement.style.cursor = 'grabbing';
+    this.chess.availableMoves(event.source.data)
+    // console.log(this.chess.moves)
+    this.showAvailableMoves()
   }
 
   drop(event: CdkDragDrop<any>) {
@@ -85,14 +91,14 @@ export class BoardComponent {
 
     var prevPos = event.previousContainer.data;
     var newPos = event.container.data;
-    var emptyTile = new Tile(null, null, prevPos.position, tileColor.DARKBROWN, null);
-
+    console.log(newPos.position)
+    console.log(this.chess.moves)
+    console.log(JSON.stringify(this.chess.moves).includes(JSON.stringify(newPos.position)))
     // if (newPos.name == null && prevPos != newPos){
-    if (this.pieceMovement.availableMoves(prevPos) == newPos.position) {
+    if (JSON.stringify(this.chess.moves).includes(JSON.stringify(newPos.position))) {
       this.resetTileColors(true);
-      this.moveColor(prevPos, newPos);
-      this.changePos(newPos, prevPos);
-      this.changePos(prevPos, emptyTile);
+      this.move(prevPos, newPos);
+      this.chess.moves = null;
     }
     console.log(prevPos)
     console.log(newPos)

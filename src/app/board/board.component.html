@@ -1,42 +1,39 @@
 <div class="content" cdkDropListGroup>
-    <div class="example-boundary">
+    <div class="boundary">
       <mat-grid-list cols="8" gutterSize="0">
-        <ng-container *ngFor="let row of tiles, let i = index">
+        <ng-container *ngFor="let row of chess.chessboard, let i = index">
           <mat-grid-tile *ngFor="let tile of row; let j = index">
             <div
             class="tile"
             cdkDropList
             (cdkDropListDropped)="drop($event)"
             [cdkDropListData]="tile"
-            [style.background]="tile.tileColor"
+            [style.background]="tile.color"
             (contextmenu)="changeColor(tile)"
           >
-            <app-tile *ngIf="tile.piece != null"
-              cdkDragBoundary=".example-boundary"
+            <app-tile *ngIf="tile.piece.name != null"
+              cdkDragBoundary=".boundary"
               [cdkDragData]="tile"
               cdkDrag
               cdkDragHandle
               cdkDragPreview
               (cdkDragStarted)="dragStart($event)"
-              [style.background-image]="tile.img"
+              [style.background-image]="tile.piece.img"
               [style.cursor]="'grab'"
             >
               <div *cdkDragPlaceholder></div>
             </app-tile>
-            <app-tile *ngIf="tile.piece == null"
+            <app-tile *ngIf="tile.piece.name == null"
               cdkDrag
               [cdkDragData]="tile"
-              [style.background-image]="tile.img"
+              [style.background-image]="tile.piece.img"
             >
               <div *cdkDragPlaceholder></div>
             </app-tile>
+            
         </div>
           </mat-grid-tile>
         </ng-container>
       </mat-grid-list>
     </div>
 </div>
-
-<!-- <div class="example-box" cdkDragBoundary=".example-boundary" cdkDrag>
-
-  </div> -->
