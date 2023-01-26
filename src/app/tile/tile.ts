@@ -1,8 +1,4 @@
-import {
-	pieceName,
-    tileColor, 
-	pieceColor} 
-from "../constants"
+import { tileColor } from "../constants"
 import { Piece } from "../piece/piece";
 
 export class Tile {
