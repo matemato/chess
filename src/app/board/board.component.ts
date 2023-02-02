@@ -91,16 +91,16 @@ export class BoardComponent {
 
     var prevPos = event.previousContainer.data;
     var newPos = event.container.data;
-    console.log(newPos.position)
-    console.log(this.chess.moves)
-    console.log(JSON.stringify(this.chess.moves).includes(JSON.stringify(newPos.position)))
+    // console.log(newPos.position)
+    // console.log(this.chess.moves)
+    // console.log(JSON.stringify(this.chess.moves).includes(JSON.stringify(newPos.position)))
     // if (newPos.name == null && prevPos != newPos){
     if (JSON.stringify(this.chess.moves).includes(JSON.stringify(newPos.position))) {
       this.resetTileColors(true);
       this.move(prevPos, newPos);
       this.chess.moves = null;
     }
-    console.log(prevPos)
-    console.log(newPos)
+    // console.log(prevPos)
+    // console.log(newPos)
   }
 }
