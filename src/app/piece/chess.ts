@@ -6,6 +6,8 @@ import { Piece } from "./piece";
 export class Chess {
     chessboard: Tile[][];
     moves: number[][] | null;
+    whoseTurn: pieceColor;
+    check: boolean;
     whitePieces: Tile[];
     blackPieces: Tile[];
     whitePositions: number[][];
@@ -13,6 +15,8 @@ export class Chess {
   
     constructor(@Inject('Tile[]') chessboard: Tile[][]){
       this.chessboard = chessboard;
+      this.whoseTurn = pieceColor.WHITE;
+      this.check = false
     }
   
     piecePositions() {
@@ -32,6 +36,24 @@ export class Chess {
       }
     }
 
+    oppositeColor(color: pieceColor) {
+      return color == pieceColor.WHITE ? pieceColor.BLACK : pieceColor.WHITE
+    }
+
+    isCheck() {
+      for (let row of this.chessboard){
+        for (let t of row) {
+          if (t.piece.name == pieceName.KING && t.piece.color == this.whoseTurn) {
+            this.check = this.tileAttacked(this.oppositeColor(this.whoseTurn), t.position) ? true : false
+            console.log(t.position)
+            console.log(this.whoseTurn)
+            console.log(this.tileAttacked(this.oppositeColor(this.whoseTurn), t.position))
+            console.log(this.check)
+          }
+        }
+      }
+    }
+
     tileAttacked(pieceColor: pieceColor | null, pos: number[]) {
       let tempMoves = JSON.parse(JSON.stringify(this.moves));
       // console.log("before: ", this.moves)
@@ -39,6 +61,7 @@ export class Chess {
         for (let t of row) {
           if (t.piece.color != null && t.piece.color != pieceColor) {
             this.getMoves(t, pieceColor!, false);
+            // console.log(this.moves)
             if (JSON.stringify(this.moves).includes(JSON.stringify(pos))){
               this.moves = JSON.parse(JSON.stringify(tempMoves))
               return true;
@@ -171,12 +194,13 @@ export class Chess {
       this.legalMove(i+d, j-1);
       this.canEat(color, i+d, j+1);      
       this.canEat(color, i+d, j-1); 
-      console.log(this.moves) 
+      // console.log(this.moves) 
     }
 
     availableMoves(tile: Tile) {
-      this.piecePositions();
       this.moves = [];
+      if (tile.piece.color != this.whoseTurn) return
+      this.piecePositions();
       this.getMoves(tile, tile.piece.color!, true);
     }
 

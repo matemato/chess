@@ -98,7 +98,11 @@ export class BoardComponent {
     if (JSON.stringify(this.chess.moves).includes(JSON.stringify(newPos.position))) {
       this.resetTileColors(true);
       this.move(prevPos, newPos);
-      this.chess.moves = null;
+      
+      this.chess.whoseTurn = this.chess.oppositeColor(this.chess.whoseTurn)
+      this.chess.moves = [];
+      this.chess.isCheck();
+      
     }
     // console.log(prevPos)
     // console.log(newPos)
