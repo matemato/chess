@@ -5,62 +5,55 @@ import { Piece } from "./piece";
 
 export class Chess {
     chessboard: Tile[][];
-    moves: number[][] | null;
+    moves: number[][];
     whoseTurn: pieceColor;
     check: boolean;
-    whitePieces: Tile[];
-    blackPieces: Tile[];
-    whitePositions: number[][];
-    blackPositions: number[][];
+    checkmate: boolean;
   
     constructor(@Inject('Tile[]') chessboard: Tile[][]){
       this.chessboard = chessboard;
       this.whoseTurn = pieceColor.WHITE;
-      this.check = false
-    }
-  
-    piecePositions() {
-      this.blackPositions = [];
-      this.whitePositions = [];
-      for (let row of this.chessboard){
-        for (let t of row) {
-          if (t.piece.name != null) {
-            if (t.piece.color == pieceColor.BLACK) {
-              this.blackPositions.push(t.position)
-            }
-            else {
-              this.whitePositions.push(t.position)
-            }
-          }
-        }
-      }
+      this.check = false;
+      this.checkmate = false;
     }
 
     oppositeColor(color: pieceColor) {
       return color == pieceColor.WHITE ? pieceColor.BLACK : pieceColor.WHITE
     }
 
+    isCheckMate() {
+      if (!this.check) return
+      for (let row of this.chessboard){
+        for (let t of row) {
+          if (t.piece.color != null && t.piece.color == this.whoseTurn) {
+            this.availableMoves(t);
+            if (this.moves.length != 0) return;
+          }
+        }
+      }
+      this.checkmate = true;
+    }
+
     isCheck() {
       for (let row of this.chessboard){
         for (let t of row) {
           if (t.piece.name == pieceName.KING && t.piece.color == this.whoseTurn) {
-            this.check = this.tileAttacked(this.oppositeColor(this.whoseTurn), t.position) ? true : false
-            console.log(t.position)
-            console.log(this.whoseTurn)
-            console.log(this.tileAttacked(this.oppositeColor(this.whoseTurn), t.position))
-            console.log(this.check)
+            if (this.tileAttacked(t.piece.color, t.position, false))
+              return true
           }
         }
       }
+      return false
     }
-
-    tileAttacked(pieceColor: pieceColor | null, pos: number[]) {
+    //byAlly boolean -> protected by the same color (for king moves)
+    tileAttacked(pieceColor: pieceColor | null, pos: number[], byAlly: boolean) {
       let tempMoves = JSON.parse(JSON.stringify(this.moves));
       // console.log("before: ", this.moves)
       for (let row of this.chessboard){
         for (let t of row) {
           if (t.piece.color != null && t.piece.color != pieceColor) {
-            this.getMoves(t, pieceColor!, false);
+            if (byAlly) this.getMoves(t, pieceColor!, false);
+            else this.getMoves(t, this.oppositeColor(pieceColor!), false);
             // console.log(this.moves)
             if (JSON.stringify(this.moves).includes(JSON.stringify(pos))){
               this.moves = JSON.parse(JSON.stringify(tempMoves))
@@ -96,7 +89,7 @@ export class Chess {
     kingLegalMove(color: pieceColor, i: number, j: number){
       if (this.inBounds([i, j])) {
         if (this.chessboard[i][j].piece.color != color &&
-          !this.tileAttacked(color, [i,j])) {
+          !this.tileAttacked(color, [i,j], true)) {
             this.moves?.push([i, j])
         }
       }
@@ -122,7 +115,6 @@ export class Chess {
 
     linearMoves(tile: Tile, color: pieceColor) {
       let [i,j] = tile.position;
-      let piece = tile.piece
       for (let dir = 0; dir < 4; dir++){
         for (let ii = tile.position[dir%2]; ii < 8; dir<2 ? ii++ : ii--) {
           if (dir%2 == 0 && ii != i) {
@@ -197,11 +189,24 @@ export class Chess {
       // console.log(this.moves) 
     }
 
+    legalCheckMoves(piece: Piece) {
+      let tempMoves = JSON.parse(JSON.stringify(this.moves));
+      this.moves = []
+      for (let [i,j] of tempMoves) {
+        let targetedTile = this.chessboard[i][j];
+        let tempPiece = targetedTile.piece
+        targetedTile.piece = piece;
+        if (!this.isCheck()) this.moves.push([i,j]);
+        targetedTile.piece = tempPiece;
+      }
+    }
+
     availableMoves(tile: Tile) {
       this.moves = [];
       if (tile.piece.color != this.whoseTurn) return
-      this.piecePositions();
       this.getMoves(tile, tile.piece.color!, true);
+      if (this.check && tile.piece.name != pieceName.KING) this.legalCheckMoves(tile.piece);
+      // console.log(this.moves)
     }
 
     getMoves(tile: Tile, color: pieceColor, checkPawnMoves: boolean) {

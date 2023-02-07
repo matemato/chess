@@ -52,10 +52,6 @@ export class BoardComponent {
     }
   }
 
-  pieceImage(i: number, j:number) {
-    return this.chess.chessboard[i][j].piece.img
-  }
-
   changeColor(tile: Tile){
     tile.color = this.toggleSelect[tile.color];
   }
@@ -101,8 +97,8 @@ export class BoardComponent {
       
       this.chess.whoseTurn = this.chess.oppositeColor(this.chess.whoseTurn)
       this.chess.moves = [];
-      this.chess.isCheck();
-      
+      this.chess.check = this.chess.isCheck();
+      this.chess.isCheckMate();
     }
     // console.log(prevPos)
     // console.log(newPos)
