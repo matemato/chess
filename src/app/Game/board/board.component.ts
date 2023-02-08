@@ -2,8 +2,9 @@ import { Component, HostListener } from '@angular/core';
 import { CdkDragDrop, CdkDragMove, CdkDragStart, moveItemInArray, transferArrayItem } from '@angular/cdk/drag-drop';
 import { pieceName, pieceColor, tileColor, pieceOrder, tileColors} from "../constants"
 import { Tile } from '../tile/tile';
-import { Piece } from '../piece/piece';
-import { Chess } from '../piece/chess';
+import { Piece } from '../piece';
+import { Chess } from '../chess';
+import { GameHistory } from '../game-history';
 
 @Component({
   selector: 'app-board',
@@ -11,9 +12,8 @@ import { Chess } from '../piece/chess';
   styleUrls: ['./board.component.scss'],
 })
 export class BoardComponent {
-  imageLink = 'url(https://www.chess.com/chess-themes/pieces/icy_sea/150/'
-  // columns = ["A", "B", "C", "D", "E", "F", "G", "H"]
-  bodyElement: HTMLElement = document.body;
+  imageLink = 'url(https://www.chess.com/chess-themes/pieces/icy_sea/150/';
+
   toggleSelect = {
     [tileColor.DARKBROWN]: tileColor.DARKSELECTED,
     [tileColor.DARKSELECTED]: tileColor.DARKBROWN,
@@ -56,11 +56,21 @@ export class BoardComponent {
     tile.color = this.toggleSelect[tile.color];
   }
 
-  move(prevPos: Tile, newPos: Tile) {
-    prevPos.color = tileColor.PREVIOUS
-    newPos.color = tileColor.MOVED
-    newPos.piece = prevPos.piece
-    prevPos.piece = new Piece(null, null, null)
+  move(prevTile: Tile, newTile: Tile) {
+    prevTile.color = tileColor.PREVIOUS
+    newTile.color = tileColor.MOVED
+    newTile.piece = prevTile.piece
+    prevTile.piece = new Piece(null, null, null)
+  }
+
+  moveBack(prevPrevPrevTile: Tile | null, prevPrevTile: Tile | null, prevTile: Tile, newTile: Tile) {
+    if (prevPrevTile != null) {
+      prevPrevPrevTile!.color = tileColor.PREVIOUS;
+      prevPrevTile.color = tileColor.MOVED;
+    }
+    let tempPiece = prevTile.piece;
+    prevTile.piece = newTile.piece;
+    newTile.piece = tempPiece;
   }
 
   @HostListener('contextmenu', ['$event'])
@@ -72,33 +82,54 @@ export class BoardComponent {
     this.resetTileColors(false)
   }
 
+  @HostListener('window:keydown', ['$event'])
+  changeRounds(event: KeyboardEvent) {
+    if (event.key == 'ArrowLeft' && this.chess.round > 0) {
+      this.resetTileColors(true)
+      this.chess.round -= 1;
+      let round = this.chess.gameHistory[this.chess.round]
+      let prevPrevPrevTile = this.chess.round > 0 ? this.chess.gameHistory[this.chess.round - 1].prevTile : null;
+      let prevPrevTile = this.chess.round > 0 ? this.chess.gameHistory[this.chess.round - 1].newTile : null;
+      this.moveBack(prevPrevPrevTile, prevPrevTile, round.prevTile, round.newTile)
+    }
+    else if (event.key == 'ArrowRight' && this.chess.round < this.chess.maxRound) {
+      this.resetTileColors(true)
+      let round = this.chess.gameHistory[this.chess.round]
+      this.move(round.prevTile, round.newTile)
+      this.chess.round += 1;
+    }
+  }
+
   dragStart(event: CdkDragStart) {
     this.resetTileColors(false);
-    this.bodyElement.classList.add('inheritCursors');
-    this.bodyElement.style.cursor = 'grabbing';
+    document.body.classList.add('inheritCursors');
+    document.body.style.cursor = 'grabbing';
     this.chess.availableMoves(event.source.data)
     // console.log(this.chess.moves)
     this.showAvailableMoves()
   }
 
   drop(event: CdkDragDrop<any>) {
-    this.bodyElement.classList.remove('inheritCursors');
-    this.bodyElement.style.cursor = 'unset';
+    document.body.classList.remove('inheritCursors');
+    document.body.style.cursor = 'unset';
 
-    var prevPos = event.previousContainer.data;
-    var newPos = event.container.data;
+    var prevTile: Tile = event.previousContainer.data;
+    var newTile: Tile = event.container.data;
     // console.log(newPos.position)
     // console.log(this.chess.moves)
     // console.log(JSON.stringify(this.chess.moves).includes(JSON.stringify(newPos.position)))
     // if (newPos.name == null && prevPos != newPos){
-    if (JSON.stringify(this.chess.moves).includes(JSON.stringify(newPos.position))) {
+    if (JSON.stringify(this.chess.moves).includes(JSON.stringify(newTile.position))) {
+      this.chess.gameHistory.push(new GameHistory(prevTile, newTile))
       this.resetTileColors(true);
-      this.move(prevPos, newPos);
+      this.move(prevTile, newTile);
       
       this.chess.whoseTurn = this.chess.oppositeColor(this.chess.whoseTurn)
       this.chess.moves = [];
       this.chess.check = this.chess.isCheck();
       this.chess.isCheckMate();
+      this.chess.round += 1;
+      this.chess.maxRound += 1;
     }
     // console.log(prevPos)
     // console.log(newPos)

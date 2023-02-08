@@ -1,5 +1,5 @@
 import { tileColor } from "../constants"
-import { Piece } from "../piece/piece";
+import { Piece } from "../piece";
 
 export class Tile {
     piece: Piece;

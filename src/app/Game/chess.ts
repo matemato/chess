@@ -1,7 +1,8 @@
 import { Inject } from "@angular/core";
-import { pieceColor, pieceName } from "../constants";
-import { Tile } from "../tile/tile";
+import { pieceColor, pieceName } from "./constants";
+import { Tile } from "./tile/tile";
 import { Piece } from "./piece";
+import { GameHistory } from "./game-history";
 
 export class Chess {
     chessboard: Tile[][];
@@ -9,12 +10,18 @@ export class Chess {
     whoseTurn: pieceColor;
     check: boolean;
     checkmate: boolean;
+    gameHistory: GameHistory[];
+    round: number;
+    maxRound: number;
   
     constructor(@Inject('Tile[]') chessboard: Tile[][]){
       this.chessboard = chessboard;
       this.whoseTurn = pieceColor.WHITE;
       this.check = false;
       this.checkmate = false;
+      this.gameHistory = []
+      this.round = 0;
+      this.maxRound = 0;
     }
 
     oppositeColor(color: pieceColor) {

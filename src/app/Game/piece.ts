@@ -1,7 +1,7 @@
 import {
 	pieceName,
 	pieceColor} 
-from "../constants"
+from "./constants"
 
 export class Piece {
     color: pieceColor | null;
