@@ -20,7 +20,7 @@ export class Chess {
     oppositeColor(color: pieceColor) {
       return color == pieceColor.WHITE ? pieceColor.BLACK : pieceColor.WHITE
     }
-
+    // king cannot be protected -> GAME OVER
     isCheckMate() {
       if (!this.check) return
       for (let row of this.chessboard){
@@ -33,7 +33,7 @@ export class Chess {
       }
       this.checkmate = true;
     }
-
+    // checks whether king is in check
     isCheck() {
       for (let row of this.chessboard){
         for (let t of row) {
@@ -45,6 +45,7 @@ export class Chess {
       }
       return false
     }
+    // check if a specified tile is targeted by a piece
     //byAlly boolean -> protected by the same color (for king moves)
     tileAttacked(pieceColor: pieceColor | null, pos: number[], byAlly: boolean) {
       let tempMoves = JSON.parse(JSON.stringify(this.moves));
@@ -66,7 +67,7 @@ export class Chess {
       // console.log("after: ", this.moves)
       return false
     }
-
+    // check if position in bounds
     inBounds(pos: number[]) {
       for (let i = 0; i < pos.length; i++) {
           if (pos[i] < 0 || pos[i] > 7) {
@@ -75,38 +76,23 @@ export class Chess {
       }
       return true;
     }
-    // also adds the move to moves (can change if needed)
+    // check if tile is empty to mvoe there
     legalMove(i: number, j: number) {
       if (this.inBounds([i, j])) {
         if (this.chessboard[i][j].piece.name == null) {
-          this.moves?.push([i, j]);
+          this.moves.push([i, j]);
           return true
         }
       }
       return false
     }
-
-    kingLegalMove(color: pieceColor, i: number, j: number){
-      if (this.inBounds([i, j])) {
-        if (this.chessboard[i][j].piece.color != color &&
-          !this.tileAttacked(color, [i,j], true)) {
-            this.moves?.push([i, j])
-        }
-      }
-    }
-
-    kingProtect(tile: Tile, i: number, j: number) {
-      if (this.inBounds([i,j]) && tile.piece.color == this.chessboard[i][j].piece.color) {
-        this.moves?.push([i, j]);
-      }
-    }
-
+    // check if a piece can eat a piece
     canEat(attackerColor: pieceColor, i: number, j: number) {
       if (this.inBounds([i, j])) {
         let color = this.chessboard[i][j].piece.color;
         if (color != null && attackerColor != color) {
           // console.log(i, j)
-          this.moves?.push([i, j]);
+          this.moves.push([i, j]);
           return true
         }
       }
@@ -152,21 +138,15 @@ export class Chess {
       }
     }
 
-    kingMoves(tile: Tile, moving: boolean) {
+    kingMoves(tile: Tile) {
       let [i,j] = tile.position;
       let dirs = [[1, 0], [1, 1], [0, 1], [-1, 1], [-1, 0], [-1, -1], [0, -1], [1, -1]];
       for (let dir of dirs) {
-        if (moving) {
-          // this.canEat(tile.piece.color!, i + dir[0], j + dir[1])
-          this.kingLegalMove(tile.piece.color!, i + dir[0], j + dir[1]);
-        }
-        else {
-          this.legalMove(i + dir[0], j + dir[1]);
-          this.kingProtect(tile, i + dir[0], j + dir[1])
-        }
+        this.legalMove(i + dir[0], j + dir[1]);
+        this.canEat(tile.piece.color!, i + dir[0], j + dir[1])
       }
     }
-
+    
     pawnMoves(tile: Tile) {
       let [i,j] = tile.position;
       let color = tile.piece.color;
@@ -178,7 +158,7 @@ export class Chess {
       this.canEat(color!, i+d, j+1);
       this.canEat(color!, i+d, j-1);
     }
-
+    // pawn attack moves
     pawnAttack(tile: Tile, color: pieceColor) {
       let [i,j] = tile.position; 
       let d = tile.piece.color == pieceColor.WHITE ? 1 : -1;
@@ -186,17 +166,20 @@ export class Chess {
       this.legalMove(i+d, j-1);
       this.canEat(color, i+d, j+1);      
       this.canEat(color, i+d, j-1); 
-      // console.log(this.moves) 
     }
-
-    legalCheckMoves(piece: Piece) {
+    // removes moves that would cause king to be in check
+    legalCheckMoves(tile: Tile) {
+      let piece = tile.piece;
+      let pos = tile.position;
       let tempMoves = JSON.parse(JSON.stringify(this.moves));
       this.moves = []
       for (let [i,j] of tempMoves) {
         let targetedTile = this.chessboard[i][j];
         let tempPiece = targetedTile.piece
         targetedTile.piece = piece;
+        this.chessboard[pos[0]][pos[1]].piece = new Piece(null, null, null);
         if (!this.isCheck()) this.moves.push([i,j]);
+        this.chessboard[pos[0]][pos[1]].piece = targetedTile.piece;
         targetedTile.piece = tempPiece;
       }
     }
@@ -205,8 +188,7 @@ export class Chess {
       this.moves = [];
       if (tile.piece.color != this.whoseTurn) return
       this.getMoves(tile, tile.piece.color!, true);
-      if (this.check && tile.piece.name != pieceName.KING) this.legalCheckMoves(tile.piece);
-      // console.log(this.moves)
+      this.legalCheckMoves(tile);
     }
 
     getMoves(tile: Tile, color: pieceColor, checkPawnMoves: boolean) {
@@ -228,7 +210,7 @@ export class Chess {
         this.diagonalMoves(tile, color);
       }
       else if (tile.piece.name == pieceName.KING){
-        this.kingMoves(tile, checkPawnMoves);
+        this.kingMoves(tile);
       }
     }
   }
