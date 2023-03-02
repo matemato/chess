@@ -5,7 +5,7 @@ from "./constants"
 
 export class Piece {
     color: pieceColor | null;
-    name: pieceName| null;
+    name: pieceName | null;
     img: string | null;
 
     constructor(color: pieceColor | null, name: pieceName | null, img: string | null) {

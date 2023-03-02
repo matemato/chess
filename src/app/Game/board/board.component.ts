@@ -63,14 +63,17 @@ export class BoardComponent {
     prevTile.piece = new Piece(null, null, null)
   }
 
-  moveBack(prevPrevPrevTile: Tile | null, prevPrevTile: Tile | null, prevTile: Tile, newTile: Tile) {
+  moveBack(prevPrevPrevTile: Tile | null, prevPrevTile: Tile | null, prevTile: Tile, newTile: Tile, eatenPiece: Piece) {
     if (prevPrevTile != null) {
       prevPrevPrevTile!.color = tileColor.PREVIOUS;
       prevPrevTile.color = tileColor.MOVED;
     }
-    let tempPiece = prevTile.piece;
+    console.log(prevPrevPrevTile?.position)
+    console.log(prevPrevTile)
+    console.log(prevTile?.position)
+    console.log(newTile?.position)
     prevTile.piece = newTile.piece;
-    newTile.piece = tempPiece;
+    newTile.piece = eatenPiece;
   }
 
   @HostListener('contextmenu', ['$event'])
@@ -90,7 +93,7 @@ export class BoardComponent {
       let round = this.chess.gameHistory[this.chess.round]
       let prevPrevPrevTile = this.chess.round > 0 ? this.chess.gameHistory[this.chess.round - 1].prevTile : null;
       let prevPrevTile = this.chess.round > 0 ? this.chess.gameHistory[this.chess.round - 1].newTile : null;
-      this.moveBack(prevPrevPrevTile, prevPrevTile, round.prevTile, round.newTile)
+      this.moveBack(prevPrevPrevTile, prevPrevTile, round.prevTile, round.newTile, round.eatenPiece)
     }
     else if (event.key == 'ArrowRight' && this.chess.round < this.chess.maxRound) {
       this.resetTileColors(true)
@@ -115,12 +118,14 @@ export class BoardComponent {
 
     var prevTile: Tile = event.previousContainer.data;
     var newTile: Tile = event.container.data;
+    var eatenPiece = this.chess.chessboard[newTile.position[0]][newTile.position[1]].piece
     // console.log(newPos.position)
     // console.log(this.chess.moves)
     // console.log(JSON.stringify(this.chess.moves).includes(JSON.stringify(newPos.position)))
     // if (newPos.name == null && prevPos != newPos){
     if (JSON.stringify(this.chess.moves).includes(JSON.stringify(newTile.position))) {
-      this.chess.gameHistory.push(new GameHistory(prevTile, newTile))
+      this.chess.gameHistory.push(new GameHistory(prevTile, newTile, eatenPiece))
+      console.log(prevTile)
       this.resetTileColors(true);
       this.move(prevTile, newTile);
       

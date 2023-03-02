@@ -193,7 +193,7 @@ export class Chess {
 
     availableMoves(tile: Tile) {
       this.moves = [];
-      if (tile.piece.color != this.whoseTurn) return
+      if (tile.piece.color != this.whoseTurn || this.round != this.maxRound) return
       this.getMoves(tile, tile.piece.color!, true);
       this.legalCheckMoves(tile);
     }
