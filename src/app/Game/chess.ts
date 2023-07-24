@@ -2,24 +2,23 @@ import { Inject } from "@angular/core";
 import { pieceColor, pieceName } from "./constants";
 import { Tile } from "./tile/tile";
 import { Piece } from "./piece";
-import { GameHistory } from "./game-history";
 
 export class Chess {
     chessboard: Tile[][];
+    gameHistory: any[];
     moves: number[][];
     whoseTurn: pieceColor;
     check: boolean;
     checkmate: boolean;
-    gameHistory: GameHistory[];
     round: number;
     maxRound: number;
   
     constructor(@Inject('Tile[]') chessboard: Tile[][]){
       this.chessboard = chessboard;
+      this.gameHistory = [JSON.parse(JSON.stringify(this.chessboard))];
       this.whoseTurn = pieceColor.WHITE;
       this.check = false;
       this.checkmate = false;
-      this.gameHistory = []
       this.round = 0;
       this.maxRound = 0;
     }
@@ -83,7 +82,7 @@ export class Chess {
       }
       return true;
     }
-    // check if tile is empty to mvoe there
+    // check if tile is empty to move there
     legalMove(i: number, j: number) {
       if (this.inBounds([i, j])) {
         if (this.chessboard[i][j].piece.name == null) {
@@ -157,13 +156,29 @@ export class Chess {
     pawnMoves(tile: Tile) {
       let [i,j] = tile.position;
       let color = tile.piece.color;
-      let d = color == pieceColor.WHITE ? 1 : -1;
+      let d = color == pieceColor.WHITE ? 1 : -1; // d == 1 means white
+      
       if (this.legalMove(i+d, j)) {
         if (i == 1 || i == 6) 
           this.legalMove(i+2*d, j);
       }
       this.canEat(color!, i+d, j+1);
       this.canEat(color!, i+d, j-1);
+
+      // en passant for white
+      if (this.round > 0) {
+        let prevRound = this.gameHistory[this.round-1];
+        for (let k of [-1, 1]) {
+          // for white
+          if (d==1 && i==4 && this.inBounds([i, k+j]) && this.gameHistory[this.round][4][j+k].piece.name == pieceName.PAWN && prevRound[6][j+k].piece.name == pieceName.PAWN) {
+            this.legalMove(5, j+k)
+          }
+          // for black
+          if (d==-1 && i==3 && this.inBounds([i, k+j]) && this.gameHistory[this.round][3][j+k].piece.name == pieceName.PAWN && prevRound[1][j+k].piece.name == pieceName.PAWN) {
+            this.legalMove(2, j+k)
+          }
+        }
+      }
     }
     // pawn attack moves
     pawnAttack(tile: Tile, color: pieceColor) {

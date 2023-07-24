@@ -4,7 +4,6 @@ import { pieceName, pieceColor, tileColor, pieceOrder, tileColors} from "../cons
 import { Tile } from '../tile/tile';
 import { Piece } from '../piece';
 import { Chess } from '../chess';
-import { GameHistory } from '../game-history';
 
 @Component({
   selector: 'app-board',
@@ -63,19 +62,6 @@ export class BoardComponent {
     prevTile.piece = new Piece(null, null, null)
   }
 
-  moveBack(prevPrevPrevTile: Tile | null, prevPrevTile: Tile | null, prevTile: Tile, newTile: Tile, eatenPiece: Piece) {
-    if (prevPrevTile != null) {
-      prevPrevPrevTile!.color = tileColor.PREVIOUS;
-      prevPrevTile.color = tileColor.MOVED;
-    }
-    console.log(prevPrevPrevTile?.position)
-    console.log(prevPrevTile)
-    console.log(prevTile?.position)
-    console.log(newTile?.position)
-    prevTile.piece = newTile.piece;
-    newTile.piece = eatenPiece;
-  }
-
   @HostListener('contextmenu', ['$event'])
   onRightClick(event: MouseEvent) {
     event.preventDefault();
@@ -88,19 +74,12 @@ export class BoardComponent {
   @HostListener('window:keydown', ['$event'])
   changeRounds(event: KeyboardEvent) {
     if (event.key == 'ArrowLeft' && this.chess.round > 0) {
-      this.resetTileColors(true)
       this.chess.round -= 1;
-      let round = this.chess.gameHistory[this.chess.round]
-      let prevPrevPrevTile = this.chess.round > 0 ? this.chess.gameHistory[this.chess.round - 1].prevTile : null;
-      let prevPrevTile = this.chess.round > 0 ? this.chess.gameHistory[this.chess.round - 1].newTile : null;
-      this.moveBack(prevPrevPrevTile, prevPrevTile, round.prevTile, round.newTile, round.eatenPiece)
     }
     else if (event.key == 'ArrowRight' && this.chess.round < this.chess.maxRound) {
-      this.resetTileColors(true)
-      let round = this.chess.gameHistory[this.chess.round]
-      this.move(round.prevTile, round.newTile)
-      this.chess.round += 1;
+      this.chess.round += 1;  
     }
+    this.chess.chessboard = this.chess.gameHistory[this.chess.round];
   }
 
   dragStart(event: CdkDragStart) {
@@ -110,6 +89,17 @@ export class BoardComponent {
     this.chess.availableMoves(event.source.data)
     // console.log(this.chess.moves)
     this.showAvailableMoves()
+  }
+
+  checkEnPassant(prevTile: Tile, newTile: Tile) {
+    let d = newTile.piece.color == pieceColor.WHITE ? 1 : -1;
+    console.log(d)
+    console.log(prevTile.piece.name)
+    console.log(newTile.piece.name)
+    if (newTile.piece.name == pieceName.PAWN && Math.abs(prevTile.position[1] - newTile.position[1]) == 1 && this.chess.gameHistory[this.chess.round][newTile.position[0]][newTile.position[1]].piece.name == null) {
+      console.log("en passant")
+      this.chess.chessboard[newTile.position[0]-1][newTile.position[1]].piece = new Piece(null, null, null)
+    }
   }
 
   drop(event: CdkDragDrop<any>) {
@@ -124,11 +114,14 @@ export class BoardComponent {
     // console.log(JSON.stringify(this.chess.moves).includes(JSON.stringify(newPos.position)))
     // if (newPos.name == null && prevPos != newPos){
     if (JSON.stringify(this.chess.moves).includes(JSON.stringify(newTile.position))) {
-      this.chess.gameHistory.push(new GameHistory(prevTile, newTile, eatenPiece))
+      // this.chess.gameHistory.push(new GameHistory(prevTile, newTile, eatenPiece))
+      
       console.log(prevTile)
       this.resetTileColors(true);
       this.move(prevTile, newTile);
-      
+      this.checkEnPassant(prevTile, newTile);
+      this.chess.gameHistory.push(JSON.parse(JSON.stringify(this.chess.chessboard)));
+
       this.chess.whoseTurn = this.chess.oppositeColor(this.chess.whoseTurn)
       this.chess.moves = [];
       this.chess.check = this.chess.isCheck();
