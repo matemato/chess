@@ -146,10 +146,21 @@ export class Chess {
 
     kingMoves(tile: Tile) {
       let [i,j] = tile.position;
+      let d = tile.piece.color == pieceColor.WHITE ? 0 : 7; // d == 0 means white
       let dirs = [[1, 0], [1, 1], [0, 1], [-1, 1], [-1, 0], [-1, -1], [0, -1], [1, -1]];
       for (let dir of dirs) {
         this.legalMove(i + dir[0], j + dir[1]);
         this.canEat(tile.piece.color!, i + dir[0], j + dir[1])
+      }
+      if (!tile.piece.moved) {
+        // left castle
+        if (!this.chessboard[d][0].piece.moved && this.chessboard[d][0].piece.name == pieceName.ROOK && this.legalMove(d,2) && !this.check) {
+            this.legalMove(d,1);
+        }
+        // right castle
+        if (!this.chessboard[d][7].piece.moved && this.chessboard[d][7].piece.name == pieceName.ROOK && this.legalMove(d,4) && !this.check && this.chessboard[d][6].piece.name == null) {
+            this.legalMove(d,5);
+        }
       }
     }
     
@@ -165,7 +176,7 @@ export class Chess {
       this.canEat(color!, i+d, j+1);
       this.canEat(color!, i+d, j-1);
 
-      // en passant for white
+      // en passant
       if (this.round > 0) {
         let prevRound = this.gameHistory[this.round-1];
         for (let k of [-1, 1]) {

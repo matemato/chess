@@ -102,6 +102,22 @@ export class BoardComponent {
     }
   }
 
+  checkCastling(prevTile: Tile, newTile: Tile) {
+    let d = newTile.piece.color == pieceColor.WHITE ? 0 : 7;
+    if (newTile.piece.name == pieceName.KING && Math.abs(prevTile.position[1] - newTile.position[1]) == 2) {
+      // left castle
+      if (newTile.position[1] == 1) {
+        this.chess.chessboard[d][2].piece = this.chess.chessboard[d][0].piece
+        this.chess.chessboard[d][0].piece = new Piece(null, null, null)
+      }
+      // right castle
+      else if (newTile.position[1] == 5) {
+        this.chess.chessboard[d][4].piece = this.chess.chessboard[d][7].piece
+        this.chess.chessboard[d][7].piece = new Piece(null, null, null)
+      }
+    }
+  }
+
   drop(event: CdkDragDrop<any>) {
     document.body.classList.remove('inheritCursors');
     document.body.style.cursor = 'unset';
@@ -118,8 +134,10 @@ export class BoardComponent {
       
       console.log(prevTile)
       this.resetTileColors(true);
+      prevTile.piece.moved = true;
       this.move(prevTile, newTile);
       this.checkEnPassant(prevTile, newTile);
+      this.checkCastling(prevTile, newTile);
       this.chess.gameHistory.push(JSON.parse(JSON.stringify(this.chess.chessboard)));
 
       this.chess.whoseTurn = this.chess.oppositeColor(this.chess.whoseTurn)
