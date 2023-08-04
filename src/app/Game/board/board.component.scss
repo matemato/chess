@@ -1,3 +1,16 @@
+.promotion {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background-position: center; /* Center the image */
+  background-repeat: no-repeat; /* Do not repeat the image */
+  background-size: 100%, 100%;
+  background-color: rgba(255, 255, 255, 1); /* Add some transparency to the overlay */
+  // background-image: url("https://www.w3schools.com/howto/img_forest.jpg");
+  z-index: 2;
+}
+
+
 .boundary {
   width: 50em;
   height: 50em;

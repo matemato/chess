@@ -3,6 +3,7 @@
       <mat-grid-list cols="8" gutterSize="0">
         <ng-container *ngFor="let row of chess.chessboard, let i = index">
           <mat-grid-tile *ngFor="let tile of row; let j = index">
+            <div class="promotion" *ngIf="tile.promotion" [style.background-image]="tile.promotionImage"></div>
             <div
             class="tile"
             cdkDropList
@@ -10,7 +11,7 @@
             [cdkDropListData]="tile"
             [style.background]="tile.color"
             (contextmenu)="changeColor(tile)"
-          >
+            >
             <app-tile *ngIf="tile.piece.name != null"
               cdkDragBoundary=".boundary"
               [cdkDragData]="tile"

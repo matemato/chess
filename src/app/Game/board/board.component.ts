@@ -23,14 +23,14 @@ export class BoardComponent {
     [tileColor.AVAILABLE]: tileColor.AVAILABLE
   }
   chess = new Chess([
-    pieceOrder.map((name, i) => new Tile(new Piece(pieceColor.WHITE, name, this.imageLink+pieceColor.WHITE+name+'.png'), [0, i], tileColors[i%2])),
-    Array(8).fill(' ').map((name, i) => new Tile(new Piece(pieceColor.WHITE, pieceName.PAWN, this.imageLink+pieceColor.WHITE+pieceName.PAWN+'.png'), [1, i], tileColors[(i+1)%2])),
-    Array(8).fill(' ').map((name, i) => new Tile(new Piece(null, null, null), [2, i], tileColors[i%2])),
-    Array(8).fill(' ').map((name, i) => new Tile(new Piece(null, null, null), [3, i], tileColors[(i+1)%2])),
-    Array(8).fill(' ').map((name, i) => new Tile(new Piece(null, null, null), [4, i], tileColors[i%2])),
-    Array(8).fill(' ').map((name, i) => new Tile(new Piece(null, null, null), [5, i], tileColors[(i+1)%2])),
-    Array(8).fill(' ').map((name, i) => new Tile(new Piece(pieceColor.BLACK, pieceName.PAWN, this.imageLink+pieceColor.BLACK+pieceName.PAWN+'.png'), [6, i], tileColors[i%2])),
-    pieceOrder.map((name, i) => new Tile(new Piece(pieceColor.BLACK, name, this.imageLink+pieceColor.BLACK+name+'.png'), [7, i], tileColors[(i+1)%2]))
+    pieceOrder.map((name, i) => new Tile(new Piece(pieceColor.WHITE, name, this.imageLink+pieceColor.WHITE+name+'.png'), [0, i], tileColors[i%2], this.imageLink+pieceColor.BLACK+pieceName.QUEEN+'.png')),
+    Array(8).fill(' ').map((name, i) => new Tile(new Piece(pieceColor.WHITE, pieceName.PAWN, this.imageLink+pieceColor.WHITE+pieceName.PAWN+'.png'), [1, i], tileColors[(i+1)%2], this.imageLink+pieceColor.BLACK+pieceName.KNIGHT+'.png')),
+    Array(8).fill(' ').map((name, i) => new Tile(new Piece(null, null, null), [2, i], tileColors[i%2], this.imageLink+pieceColor.BLACK+pieceName.ROOK+'.png')),
+    Array(8).fill(' ').map((name, i) => new Tile(new Piece(null, null, null), [3, i], tileColors[(i+1)%2], this.imageLink+pieceColor.BLACK+pieceName.BISHOP+'.png')),
+    Array(8).fill(' ').map((name, i) => new Tile(new Piece(null, null, null), [4, i], tileColors[i%2], this.imageLink+pieceColor.WHITE+pieceName.BISHOP+'.png')),
+    Array(8).fill(' ').map((name, i) => new Tile(new Piece(null, null, null), [5, i], tileColors[(i+1)%2], this.imageLink+pieceColor.WHITE+pieceName.ROOK+'.png')),
+    Array(8).fill(' ').map((name, i) => new Tile(new Piece(pieceColor.BLACK, pieceName.PAWN, this.imageLink+pieceColor.BLACK+pieceName.PAWN+'.png'), [6, i], tileColors[i%2], this.imageLink+pieceColor.WHITE+pieceName.KNIGHT+'.png')),
+    pieceOrder.map((name, i) => new Tile(new Piece(pieceColor.BLACK, name, this.imageLink+pieceColor.BLACK+name+'.png'), [7, i], tileColors[(i+1)%2], this.imageLink+pieceColor.WHITE+pieceName.QUEEN+'.png'))
   ])
 
   resetTileColors(removeAll: boolean) {
@@ -39,6 +39,14 @@ export class BoardComponent {
         if (removeAll || (t.color != tileColor.MOVED && t.color != tileColor.PREVIOUS)) {
           t.color = (i%2 + j)%2 == 0 ? tileColor.LIGHTBROWN : tileColor.DARKBROWN;
         }
+      }
+    }
+  }
+
+  resetPromotion() {
+    for (let [i,row] of this.chess.chessboard.entries()) {
+      for (let [j, t] of row.entries()) {
+        t.promotion = false;
       }
     }
   }
@@ -69,6 +77,7 @@ export class BoardComponent {
   @HostListener('click', ['$event'])
   onLeftClick(event: MouseEvent){
     this.resetTileColors(false)
+    this.resetPromotion()
   }
 
   @HostListener('window:keydown', ['$event'])
@@ -87,15 +96,11 @@ export class BoardComponent {
     document.body.classList.add('inheritCursors');
     document.body.style.cursor = 'grabbing';
     this.chess.availableMoves(event.source.data)
-    // console.log(this.chess.moves)
     this.showAvailableMoves()
   }
 
   checkEnPassant(prevTile: Tile, newTile: Tile) {
     let d = newTile.piece.color == pieceColor.WHITE ? 1 : -1;
-    console.log(d)
-    console.log(prevTile.piece.name)
-    console.log(newTile.piece.name)
     if (newTile.piece.name == pieceName.PAWN && Math.abs(prevTile.position[1] - newTile.position[1]) == 1 && this.chess.gameHistory[this.chess.round][newTile.position[0]][newTile.position[1]].piece.name == null) {
       console.log("en passant")
       this.chess.chessboard[newTile.position[0]-1][newTile.position[1]].piece = new Piece(null, null, null)
@@ -124,28 +129,31 @@ export class BoardComponent {
 
     var prevTile: Tile = event.previousContainer.data;
     var newTile: Tile = event.container.data;
-    var eatenPiece = this.chess.chessboard[newTile.position[0]][newTile.position[1]].piece
-    // console.log(newPos.position)
-    // console.log(this.chess.moves)
-    // console.log(JSON.stringify(this.chess.moves).includes(JSON.stringify(newPos.position)))
-    // if (newPos.name == null && prevPos != newPos){
-    if (JSON.stringify(this.chess.moves).includes(JSON.stringify(newTile.position))) {
-      // this.chess.gameHistory.push(new GameHistory(prevTile, newTile, eatenPiece))
-      
-      console.log(prevTile)
-      this.resetTileColors(true);
-      prevTile.piece.moved = true;
-      this.move(prevTile, newTile);
-      this.checkEnPassant(prevTile, newTile);
-      this.checkCastling(prevTile, newTile);
-      this.chess.gameHistory.push(JSON.parse(JSON.stringify(this.chess.chessboard)));
 
-      this.chess.whoseTurn = this.chess.oppositeColor(this.chess.whoseTurn)
-      this.chess.moves = [];
-      this.chess.check = this.chess.isCheck();
-      this.chess.isCheckMate();
-      this.chess.round += 1;
-      this.chess.maxRound += 1;
+    if (JSON.stringify(this.chess.moves).includes(JSON.stringify(newTile.position))) {
+      if (prevTile.piece.name == pieceName.PAWN && (newTile.position[0] == 0 || newTile.position[0] == 7)) {
+        if (prevTile.piece.color == pieceColor.BLACK) { // will probably need to change for board flip
+          for (let i = 0; i < 4; i++) {
+            this.chess.chessboard[i][newTile.position[1]].promotion = true;
+          }
+        }
+      }
+      else {
+        console.log(prevTile)
+        this.resetTileColors(true);
+        prevTile.piece.moved = true;
+        this.move(prevTile, newTile);
+        this.checkEnPassant(prevTile, newTile);
+        this.checkCastling(prevTile, newTile);
+        this.chess.gameHistory.push(JSON.parse(JSON.stringify(this.chess.chessboard)));
+
+        this.chess.whoseTurn = this.chess.oppositeColor(this.chess.whoseTurn)
+        this.chess.moves = [];
+        this.chess.check = this.chess.isCheck();
+        this.chess.isCheckMate();
+        this.chess.round += 1;
+        this.chess.maxRound += 1;
+      }
     }
     // console.log(prevPos)
     // console.log(newPos)
