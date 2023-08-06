@@ -11,6 +11,7 @@ import { Chess } from '../chess';
   styleUrls: ['./board.component.scss'],
 })
 export class BoardComponent {
+  promotedTile: Tile;
   imageLink = 'url(https://www.chess.com/chess-themes/pieces/icy_sea/150/';
 
   toggleSelect = {
@@ -41,6 +42,20 @@ export class BoardComponent {
         }
       }
     }
+  }
+
+  promote(tile: Tile) {
+    console.log("promotion")
+    let choice = tile.position[0]
+    let promotionPieces = [pieceName.QUEEN, pieceName.KNIGHT, pieceName.ROOK, pieceName.BISHOP, pieceName.BISHOP, pieceName.ROOK, pieceName.KNIGHT, pieceName.QUEEN]
+    let color = choice < 4 ? pieceColor.BLACK : pieceColor.WHITE
+    let pos = choice < 4 ? 0 : 7
+    this.resetTileColors(true);
+    this.move(this.promotedTile, this.chess.chessboard[pos][tile.position[1]])
+    this.chess.chessboard[pos][tile.position[1]].piece = new Piece(color, promotionPieces[choice], this.imageLink+color+promotionPieces[choice]+'.png');
+    // this.promotedTile.piece = new Piece(null, null, null);
+    this.resetPromotion();
+    this.endTurn();
   }
 
   resetPromotion() {
@@ -123,6 +138,16 @@ export class BoardComponent {
     }
   }
 
+  endTurn() {
+    this.chess.gameHistory.push(JSON.parse(JSON.stringify(this.chess.chessboard)));
+    this.chess.whoseTurn = this.chess.oppositeColor(this.chess.whoseTurn)
+    this.chess.moves = [];
+    this.chess.check = this.chess.isCheck();
+    this.chess.isCheckMate();
+    this.chess.round += 1;
+    this.chess.maxRound += 1;
+  }
+
   drop(event: CdkDragDrop<any>) {
     document.body.classList.remove('inheritCursors');
     document.body.style.cursor = 'unset';
@@ -130,13 +155,19 @@ export class BoardComponent {
     var prevTile: Tile = event.previousContainer.data;
     var newTile: Tile = event.container.data;
 
-    if (JSON.stringify(this.chess.moves).includes(JSON.stringify(newTile.position))) {
+    if (prevTile.piece.name != null && JSON.stringify(this.chess.moves).includes(JSON.stringify(newTile.position))) {
       if (prevTile.piece.name == pieceName.PAWN && (newTile.position[0] == 0 || newTile.position[0] == 7)) {
         if (prevTile.piece.color == pieceColor.BLACK) { // will probably need to change for board flip
           for (let i = 0; i < 4; i++) {
             this.chess.chessboard[i][newTile.position[1]].promotion = true;
           }
         }
+        else {
+          for (let i = 4; i < 8; i++) {
+            this.chess.chessboard[i][newTile.position[1]].promotion = true;
+          }
+        }
+        this.promotedTile = prevTile;
       }
       else {
         console.log(prevTile)
@@ -145,14 +176,7 @@ export class BoardComponent {
         this.move(prevTile, newTile);
         this.checkEnPassant(prevTile, newTile);
         this.checkCastling(prevTile, newTile);
-        this.chess.gameHistory.push(JSON.parse(JSON.stringify(this.chess.chessboard)));
-
-        this.chess.whoseTurn = this.chess.oppositeColor(this.chess.whoseTurn)
-        this.chess.moves = [];
-        this.chess.check = this.chess.isCheck();
-        this.chess.isCheckMate();
-        this.chess.round += 1;
-        this.chess.maxRound += 1;
+        this.endTurn();
       }
     }
     // console.log(prevPos)
