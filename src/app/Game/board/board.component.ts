@@ -144,6 +144,7 @@ export class BoardComponent {
     this.chess.moves = [];
     this.chess.check = this.chess.isCheck();
     this.chess.isCheckMate();
+    this.chess.isStaleMate();
     this.chess.round += 1;
     this.chess.maxRound += 1;
   }

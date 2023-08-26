@@ -8,6 +8,8 @@ import { BoardComponent } from './Game/board/board.component';
 import { DragDropModule } from '@angular/cdk/drag-drop';
 import { MatGridListModule } from '@angular/material/grid-list';
 import { TileComponent } from './Game/tile/tile.component';
+import {MatIconModule} from '@angular/material/icon';
+import {MatButtonModule} from '@angular/material/button';
 
 @NgModule({
   declarations: [
@@ -21,6 +23,8 @@ import { TileComponent } from './Game/tile/tile.component';
     BrowserAnimationsModule,
     DragDropModule,
     MatGridListModule,
+    MatIconModule,
+    MatButtonModule
   ],
   providers: [],
   bootstrap: [AppComponent],

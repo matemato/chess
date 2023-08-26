@@ -10,6 +10,7 @@ export class Chess {
     whoseTurn: pieceColor;
     check: boolean;
     checkmate: boolean;
+    stalemate: boolean;
     round: number;
     maxRound: number;
   
@@ -19,12 +20,25 @@ export class Chess {
       this.whoseTurn = pieceColor.WHITE;
       this.check = false;
       this.checkmate = false;
+      this.stalemate = false;
       this.round = 0;
       this.maxRound = 0;
     }
 
     oppositeColor(color: pieceColor) {
       return color == pieceColor.WHITE ? pieceColor.BLACK : pieceColor.WHITE
+    }
+
+    isStaleMate() {
+      for (let row of this.chessboard){
+        for (let t of row) {
+          if (t.piece.color != null && t.piece.color == this.whoseTurn) {
+            this.availableMoves(t);
+            if (this.moves.length != 0) return;
+          }
+        }
+      }
+      this.stalemate = true;
     }
     // king cannot be protected -> GAME OVER
     isCheckMate() {

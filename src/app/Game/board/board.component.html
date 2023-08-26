@@ -1,4 +1,15 @@
-<div class="content" cdkDropListGroup>
+<div class="outer">
+
+<div class="info">
+  <div>Player is in check: {{ chess.check }}</div>
+  <div>Player is in checkmate: {{ chess.checkmate }}</div>
+  <div>Player is in stalemate: {{ chess.stalemate }}</div>
+  <div>ROUND: {{ chess.round }}</div>
+</div>
+
+<div class="container">
+  
+  <div class="yo" cdkDropListGroup>
     <div class="boundary">
       <mat-grid-list cols="8" gutterSize="0">
         <ng-container *ngFor="let row of chess.chessboard, let i = index">
@@ -37,7 +48,11 @@
         </ng-container>
       </mat-grid-list>
     </div>
+  </div>
+
+  <div class="flip">
+    <mat-icon>repeat</mat-icon>
+  </div>
 </div>
-<div>Player is in check: {{ chess.check }}</div>
-<div>Player is in checkmate: {{ chess.checkmate }}</div>
-<div>ROUND: {{ chess.round }}</div>
+
+</div>
