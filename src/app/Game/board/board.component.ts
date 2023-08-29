@@ -34,6 +34,16 @@ export class BoardComponent {
     pieceOrder.map((name, i) => new Tile(new Piece(pieceColor.BLACK, name, this.imageLink+pieceColor.BLACK+name+'.png'), [7, i], tileColors[(i+1)%2], this.imageLink+pieceColor.WHITE+pieceName.QUEEN+'.png'))
   ])
 
+  flipBoard() {
+    this.chess.boardFlipped = !this.chess.boardFlipped;
+    this.chess.chessboard = this.chess.chessboard.reverse().map(row => row.reverse());
+    for (let [i,row] of this.chess.chessboard.entries()) {
+      for (let [j, t] of row.entries()) {
+        t.position = [i,j];
+      }
+    }
+  }
+
   resetTileColors(removeAll: boolean) {
     for (let [i,row] of this.chess.chessboard.entries()) {
       for (let [j, t] of row.entries()) {
@@ -49,6 +59,7 @@ export class BoardComponent {
     let choice = tile.position[0]
     let promotionPieces = [pieceName.QUEEN, pieceName.KNIGHT, pieceName.ROOK, pieceName.BISHOP, pieceName.BISHOP, pieceName.ROOK, pieceName.KNIGHT, pieceName.QUEEN]
     let color = choice < 4 ? pieceColor.BLACK : pieceColor.WHITE
+    if (!this.chess.boardFlipped) color = this.chess.oppositeColor(color)
     let pos = choice < 4 ? 0 : 7
     this.resetTileColors(true);
     this.move(this.promotedTile, this.chess.chessboard[pos][tile.position[1]])
@@ -85,10 +96,10 @@ export class BoardComponent {
     prevTile.piece = new Piece(null, null, null)
   }
 
-  @HostListener('contextmenu', ['$event'])
-  onRightClick(event: MouseEvent) {
-    event.preventDefault();
-  }
+  // @HostListener('contextmenu', ['$event'])
+  // onRightClick(event: MouseEvent) {
+  //   event.preventDefault();
+  // }
   @HostListener('click', ['$event'])
   onLeftClick(event: MouseEvent){
     this.resetTileColors(false)
@@ -158,12 +169,12 @@ export class BoardComponent {
 
     if (prevTile.piece.name != null && JSON.stringify(this.chess.moves).includes(JSON.stringify(newTile.position))) {
       if (prevTile.piece.name == pieceName.PAWN && (newTile.position[0] == 0 || newTile.position[0] == 7)) {
-        if (prevTile.piece.color == pieceColor.BLACK) { // will probably need to change for board flip
+        if (newTile.position[0] == 0) { 
           for (let i = 0; i < 4; i++) {
             this.chess.chessboard[i][newTile.position[1]].promotion = true;
           }
         }
-        else {
+        else if (newTile.position[0] == 7){
           for (let i = 4; i < 8; i++) {
             this.chess.chessboard[i][newTile.position[1]].promotion = true;
           }

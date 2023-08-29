@@ -5,6 +5,7 @@ import { Piece } from "./piece";
 
 export class Chess {
     chessboard: Tile[][];
+    boardFlipped: boolean;
     gameHistory: any[];
     moves: number[][];
     whoseTurn: pieceColor;
@@ -16,6 +17,7 @@ export class Chess {
   
     constructor(@Inject('Tile[]') chessboard: Tile[][]){
       this.chessboard = chessboard;
+      this.boardFlipped = true;
       this.gameHistory = [JSON.parse(JSON.stringify(this.chessboard))];
       this.whoseTurn = pieceColor.WHITE;
       this.check = false;
@@ -161,6 +163,7 @@ export class Chess {
     kingMoves(tile: Tile) {
       let [i,j] = tile.position;
       let d = tile.piece.color == pieceColor.WHITE ? 0 : 7; // d == 0 means white
+      if (!this.boardFlipped) d = 7-d;
       let dirs = [[1, 0], [1, 1], [0, 1], [-1, 1], [-1, 0], [-1, -1], [0, -1], [1, -1]];
       for (let dir of dirs) {
         this.legalMove(i + dir[0], j + dir[1]);
@@ -182,7 +185,7 @@ export class Chess {
       let [i,j] = tile.position;
       let color = tile.piece.color;
       let d = color == pieceColor.WHITE ? 1 : -1; // d == 1 means white
-      
+      if (!this.boardFlipped) d = -d;
       if (this.legalMove(i+d, j)) {
         if (i == 1 || i == 6) 
           this.legalMove(i+2*d, j);
@@ -209,6 +212,7 @@ export class Chess {
     pawnAttack(tile: Tile, color: pieceColor) {
       let [i,j] = tile.position; 
       let d = tile.piece.color == pieceColor.WHITE ? 1 : -1;
+      if (!this.boardFlipped) d = -d;
       this.legalMove(i+d, j+1);
       this.legalMove(i+d, j-1);
       this.canEat(color, i+d, j+1);      
@@ -235,10 +239,11 @@ export class Chess {
       this.moves = [];
       if (tile.piece.color != this.whoseTurn || this.round != this.maxRound) return
       this.getMoves(tile, tile.piece.color!, true);
-      this.legalCheckMoves(tile);
+      // this.legalCheckMoves(tile);
     }
 
     getMoves(tile: Tile, color: pieceColor, checkPawnMoves: boolean) {
+      console.log(tile)
       if (tile.piece.name == pieceName.PAWN) {
         if (checkPawnMoves) this.pawnMoves(tile)
         else this.pawnAttack(tile, color);

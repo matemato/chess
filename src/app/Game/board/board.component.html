@@ -7,9 +7,11 @@
   <div>ROUND: {{ chess.round }}</div>
 </div>
 
-<div class="container">
   
   <div class="yo" cdkDropListGroup>
+    <div class="flip" style="visibility: hidden;">
+      <mat-icon>repeat</mat-icon>
+    </div>
     <div class="boundary">
       <mat-grid-list cols="8" gutterSize="0">
         <ng-container *ngFor="let row of chess.chessboard, let i = index">
@@ -48,11 +50,9 @@
         </ng-container>
       </mat-grid-list>
     </div>
+    <div class="flip" (click)="flipBoard()">
+      <mat-icon>repeat</mat-icon>
+    </div>
   </div>
-
-  <div class="flip">
-    <mat-icon>repeat</mat-icon>
-  </div>
-</div>
 
 </div>
