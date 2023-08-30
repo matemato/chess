@@ -239,11 +239,11 @@ export class Chess {
       this.moves = [];
       if (tile.piece.color != this.whoseTurn || this.round != this.maxRound) return
       this.getMoves(tile, tile.piece.color!, true);
-      // this.legalCheckMoves(tile);
+      this.legalCheckMoves(tile);
     }
 
     getMoves(tile: Tile, color: pieceColor, checkPawnMoves: boolean) {
-      console.log(tile)
+      // console.log(tile)
       if (tile.piece.name == pieceName.PAWN) {
         if (checkPawnMoves) this.pawnMoves(tile)
         else this.pawnAttack(tile, color);

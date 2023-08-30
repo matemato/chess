@@ -36,12 +36,23 @@ export class BoardComponent {
 
   flipBoard() {
     this.chess.boardFlipped = !this.chess.boardFlipped;
-    this.chess.chessboard = this.chess.chessboard.reverse().map(row => row.reverse());
-    for (let [i,row] of this.chess.chessboard.entries()) {
-      for (let [j, t] of row.entries()) {
-        t.position = [i,j];
+    // this.chess.chessboard = this.chess.chessboard.reverse().map(row => row.reverse());
+
+    // for (let [i,row] of this.chess.chessboard.entries()) {
+    //   for (let [j, t] of row.entries()) {
+    //     t.position = [i,j];
+    //   }
+    // }
+
+    for (let k of this.chess.gameHistory.keys()) {
+      this.chess.gameHistory[k] = this.chess.gameHistory[k].reverse().map((row: any[]) => row.reverse());
+      for (let [i,row] of this.chess.gameHistory[k].entries()) {
+        for (let [j, t] of row.entries()) {
+          t.position = [i,j];
+        }
       }
     }
+    this.chess.chessboard = JSON.parse(JSON.stringify(this.chess.gameHistory[this.chess.round]));
   }
 
   resetTileColors(removeAll: boolean) {
@@ -114,7 +125,7 @@ export class BoardComponent {
     else if (event.key == 'ArrowRight' && this.chess.round < this.chess.maxRound) {
       this.chess.round += 1;  
     }
-    this.chess.chessboard = this.chess.gameHistory[this.chess.round];
+    this.chess.chessboard = JSON.parse(JSON.stringify(this.chess.gameHistory[this.chess.round]));
   }
 
   dragStart(event: CdkDragStart) {
@@ -151,6 +162,8 @@ export class BoardComponent {
 
   endTurn() {
     this.chess.gameHistory.push(JSON.parse(JSON.stringify(this.chess.chessboard)));
+    console.log("pushed")
+    console.log(this.chess.gameHistory)
     this.chess.whoseTurn = this.chess.oppositeColor(this.chess.whoseTurn)
     this.chess.moves = [];
     this.chess.check = this.chess.isCheck();
